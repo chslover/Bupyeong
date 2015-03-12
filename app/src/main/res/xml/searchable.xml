@@ -1,0 +1,5 @@
+<searchable xmlns:android="http://schemas.android.com/apk/res/android"
+	        android:label="search"
+	        android:hint="명칭, 키워드, 출구번호 검색">
+
+</searchable>
