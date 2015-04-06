@@ -18,19 +18,18 @@
             android:background="#669f36"
             app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+	    <FrameLayout
+		    android:id="@+id/container"
+		    android:layout_width="match_parent"
+		    android:layout_height="match_parent"
+		    android:background="@android:color/white">
 
-        <FrameLayout
-            android:id="@+id/container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@android:color/white">
-
-	        <fragment
-		        android:id="@+id/fragment_map"
-		        android:name="com.project.myapplication.fragment.MapFragment"
-		        android:layout_width="match_parent"
-		        android:layout_height="match_parent"/>
-        </FrameLayout>
+		    <fragment
+			    android:id="@+id/fragment_map"
+			    android:name="com.project.myapplication.fragment.MapFragment"
+			    android:layout_width="match_parent"
+			    android:layout_height="match_parent"/>
+	    </FrameLayout>
     </LinearLayout>
 
     <ListView

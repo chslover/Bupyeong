@@ -30,9 +30,10 @@ import com.project.myapplication.dao.UserInputData;
 import com.project.myapplication.fragment.MapFragment;
 import com.project.myapplication.fragment.SearchingFragment;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity{
 	public static final boolean ON_CLICK = true;
 	public static final boolean ON_CLOSE = false;
+
 	private DrawerLayout dlDrawer;
 	private ActionBarDrawerToggle dtToggle;
 	private Toolbar toolbar;
@@ -60,10 +61,12 @@ public class MainActivity extends ActionBarActivity {
 		listNavi = (ListView) findViewById(R.id.navi);
 		tr = new TimeReceiver();
 		adapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.listview_menu);
-		onCheck = ON_CLOSE;
+
 		listNavi.setAdapter(adapter);
 		listNavi.setOnItemClickListener(onItemClickListener);
 		setSupportActionBar(toolbar);
+
+		onCheck = ON_CLOSE;
 
 		adapter.add("홈");
 		adapter.add("길 찾기");
@@ -98,10 +101,9 @@ public class MainActivity extends ActionBarActivity {
 		searchView = (SearchView) menu.findItem(R.id.search).getActionView();
 		searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 		searchView.setQueryHint("명칭, 키워드, 출구번호 검색");
-
+		searchView.setOnSearchClickListener(onClickListener);
 		searchView.setOnQueryTextListener(onQueryTextListener);
 		searchView.setOnSuggestionListener(onSuggestionListener);
-		searchView.setOnSearchClickListener(onClickListener);
 		searchView.setOnCloseListener(onCloseListener);
 		if(null != searchManager){
 			searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
@@ -125,62 +127,14 @@ public class MainActivity extends ActionBarActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item){
-		if(dtToggle.onOptionsItemSelected(item)){
-			return true;
-		}
-
-		return super.onOptionsItemSelected(item);
+		return super.onOptionsItemSelected(item) || dtToggle.onOptionsItemSelected(item);
 	}
 	@Override
 	public void onBackPressed(){
 		backPressCloseHandler.onBackPressed();
 	}
-	private SearchView.OnSuggestionListener onSuggestionListener = new SearchView.OnSuggestionListener() {
-		@Override
-		public boolean onSuggestionSelect(int postion){
 
-			return false;
-		}
-		//자동완성 메뉴에서 선택시 검색창에 적용
-		@Override
-		public boolean onSuggestionClick(int postion){
-			SQLiteCursor cursor = (SQLiteCursor) searchView.getSuggestionsAdapter().getItem(postion);
-			int indexColumnName = cursor.getColumnIndex(UndergroundHelper.FIELD_NAME);
 
-			searchView.setQuery(cursor.getString(indexColumnName), false);
-			return false;
-		}
-	};
-	private SearchView.OnQueryTextListener onQueryTextListener = new SearchView.OnQueryTextListener() {
-		@Override
-		public boolean onQueryTextSubmit(String query){
-			tr.setTime();
-			long result = userDatabase.insertQuery(query, tr.getTime());
-			Log.v("onQueryTextSubmit", query);
-
-			Intent intent = new Intent(MainActivity.this, SearchResultActivity.class);
-			intent.putExtra("Query", query);
-			startActivity(intent);
-
-			return result != -1;
-		}
-
-		@Override
-		public boolean onQueryTextChange(String newText){
-			Cursor cursor;
-			cursor = underDatabase.getAutoComplete(newText);
-			if(cursor.getCount() != 0){
-				String[] columns = new String[]{UndergroundHelper.FIELD_NAME};
-				int[] columnTextId = new int[]{android.R.id.text1};
-				AutoCompleteAdapter autoCompleteAdapter = new AutoCompleteAdapter(getBaseContext(), R.layout.dropdown_menu, cursor, columns, columnTextId, 0);
-				searchView.setSuggestionsAdapter(autoCompleteAdapter);
-				//cursor.close();
-				return true;
-			} else{
-				return false;
-			}
-		}
-	};
 	//네비게이션 메뉴 클릭 이벤트
 	private AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener(){
 		@Override
@@ -208,6 +162,7 @@ public class MainActivity extends ActionBarActivity {
 			return false;
 		}
 	};
+
 	private void selectFragment(){
 		fragManager = getFragmentManager();
 		fragTransaction = fragManager.beginTransaction();
@@ -219,4 +174,49 @@ public class MainActivity extends ActionBarActivity {
 		fragTransaction.replace(R.id.container,frag);
 		fragTransaction.commit();
 	}
+
+	private SearchView.OnQueryTextListener onQueryTextListener = new SearchView.OnQueryTextListener() {
+		@Override
+		public boolean onQueryTextSubmit(String query){
+			tr.setTime();
+			long result = userDatabase.insertQuery(query, tr.getTime());
+			Log.v("onQueryTextSubmit", query);
+
+			Intent intent = new Intent(MainActivity.this, SearchResultActivity.class);
+			intent.putExtra("Query", query);
+			startActivity(intent);
+
+			return result != -1;
+		}@Override
+		 public boolean onQueryTextChange(String newText){
+			Cursor cursor;
+			cursor = underDatabase.getAutoComplete(newText);
+			if(cursor.getCount() != 0){
+				String[] columns = new String[]{UndergroundHelper.FIELD_NAME};
+				int[] columnTextId = new int[]{android.R.id.text1};
+				AutoCompleteAdapter autoCompleteAdapter = new AutoCompleteAdapter(getBaseContext(), R.layout.dropdown_menu, cursor, columns, columnTextId, 0);
+				searchView.setSuggestionsAdapter(autoCompleteAdapter);
+				//cursor.close();
+				return true;
+			} else{
+				return false;
+			}
+		}
+	};
+	private SearchView.OnSuggestionListener onSuggestionListener = new SearchView.OnSuggestionListener() {
+		@Override
+		public boolean onSuggestionSelect(int postion){
+
+			return false;
+		}
+		//자동완성 메뉴에서 선택시 검색창에 적용
+		@Override
+		public boolean onSuggestionClick(int postion){
+			SQLiteCursor cursor = (SQLiteCursor) searchView.getSuggestionsAdapter().getItem(postion);
+			int indexColumnName = cursor.getColumnIndex(UndergroundHelper.FIELD_NAME);
+
+			searchView.setQuery(cursor.getString(indexColumnName), false);
+			return false;
+		}
+	};
 }

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.project.myapplication" >
-	<provider android:name="UndergroundHelper" android:authorities="UndergroundHelper"/>
+
+    <provider
+        android:name=".UndergroundHelper"
+        android:authorities="UndergroundHelper" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -30,9 +34,9 @@
         <activity
             android:name=".SearchResultDetailActivity"
             android:label="@string/title_activity_search_result_detail" >
-	        <meta-data
-		        android:name="android.support.PARENT_ACTIVITY"
-		        android:value="com.project.myapplication.SearchResultActivity" />
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.project.myapplication.SearchResultActivity" />
         </activity>
     </application>
 

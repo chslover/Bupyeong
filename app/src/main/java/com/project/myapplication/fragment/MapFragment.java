@@ -1,36 +1,23 @@
 package com.project.myapplication.fragment;
 
 import android.app.Fragment;
-import android.graphics.Matrix;
-import android.graphics.PointF;
+import android.graphics.CornerPathEffect;
+import android.graphics.Paint;
 import android.os.Bundle;
-import android.util.FloatMath;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.widget.FrameLayout;
 
 import com.project.myapplication.R;
+import com.qozix.tileview.TileView;
 
 
 /**
  * Created by 최형식 on 2015-02-26.
  */
 public class MapFragment extends Fragment {
-	private Matrix matrix;
-	private Matrix savedMatrix;
-	private static final int NONE = 0;
-	private static final int DRAG = 1;
-	private static final int ZOOM = 2;
-	private int mode;
-	private PointF start;
-	private PointF mid;
-	private float oldDist;
-	private static final String LOG_TAG = "Touch Event";
-	private ImageView mapImage;
-	private ImageView mapText;
+	private FrameLayout container;
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 
 		return inflater.inflate(R.layout.fragment_map, container, false);
@@ -38,73 +25,30 @@ public class MapFragment extends Fragment {
 
 	public void onStart(){
 		super.onStart();
-		matrix = new Matrix();
-		savedMatrix = new Matrix();
-		mode = NONE;
-		start = new PointF();
-		mid = new PointF();
-		oldDist = 1f;
-
-		mapImage = (ImageView) getActivity().findViewById(R.id.mapImage);
-		mapText = (ImageView) getActivity().findViewById(R.id.mapText);
-		mapImage.setImageDrawable(getResources().getDrawable(R.drawable.brick));
-		/*SVG svg = SVGParser.getSVGFromResource(getResources(), R.drawable.ic_launcher);
-		imageView.setImageDrawable(svg.createPictureDrawable());
-		imageView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);*/
-		mapImage.setOnTouchListener(onTouch);
+		container = (FrameLayout) getActivity().findViewById(R.id.frame);
+		setTileView();
 	}
-	private View.OnTouchListener onTouch = new View.OnTouchListener(){
-			@Override
-			public boolean onTouch(View v, MotionEvent event){
-				switch(event.getAction() & MotionEvent.ACTION_MASK){
-					case MotionEvent.ACTION_DOWN:
-						Log.i(LOG_TAG, "Move Down");
-						savedMatrix.set(matrix);
-						start.set(event.getX(), event.getY());
-						mode = DRAG;
-						break;
-					case MotionEvent.ACTION_POINTER_DOWN:
-						Log.i(LOG_TAG, "Move Pointer Down");
-						oldDist = spacing(event);
-						if(oldDist > 10f){
-							savedMatrix.set(matrix);
-							midPoint(mid, event);
-							mode = ZOOM;
-						}
-						break;
-					case MotionEvent.ACTION_UP:
-					case MotionEvent.ACTION_POINTER_UP:
-						mode = NONE;
-						break;
-					case MotionEvent.ACTION_MOVE:
-						Log.i(LOG_TAG, "Move");
-						if(mode == DRAG){
-							matrix.set(savedMatrix);
-							matrix.postTranslate(event.getX() - start.x, event.getY() - start.y);
-						} else if(mode == ZOOM){
-							float newDist = spacing(event);
-							if(newDist > 10f){
-								matrix.set(savedMatrix);
-								float scale = newDist / oldDist;
-								matrix.postScale(scale, scale, mid.x, mid.y);
-							}
-						}
-						break;
-				}
-				mapImage.setImageMatrix(matrix);
-				mapText.setImageMatrix(matrix);
-				return true;
-			}
-			private float spacing(MotionEvent event){
-				float x = event.getX(0) - event.getX(1);
-				float y = event.getY(0) - event.getY(1);
-				return FloatMath.sqrt(x * x + y * y);
-			}
-			private void midPoint(PointF point, MotionEvent event){
-				float x = event.getX(0) + event.getX(1);
-				float y = event.getY(0) + event.getY(1);
-				point.set(x/2, y/2);
-			}
-		};
+	private void setTileView(){
+		TileView tileView = new TileView(getActivity());
+		tileView.setSize( 3090, 2536 );
+		tileView.addDetailLevel( 0.25f, "tiles/boston/boston-125-%col%_%row%.jpg", "samples/boston-overview.jpg" );
+		tileView.addDetailLevel( 1.0f, "tiles/boston/boston-500-%col%_%row%.jpg", "samples/boston-pedestrian.jpg" );
+		tileView.addDetailLevel( 0.5f, "tiles/boston/boston-250-%col%_%row%.jpg", "samples/boston-overview.jpg" );
+
+		// some preferences...
+		tileView.setMarkerAnchorPoints( -0.5f, -1.0f );
+		tileView.setScaleLimits( 0, 2 );
+		tileView.setTransitionsEnabled( false );
+
+		// provide the corner coordinates for relative positioning 시작화면위치?
+		tileView.defineRelativeBounds( 42.379676, -71.094919, 42.346550, -71.040280 );
+
+		// get the default paint and style it.  the same effect could be achieved by passing a custom Paint instnace
+		Paint paint = tileView.getPathPaint();
+		paint.setShadowLayer( 4, 2, 2, 0x66000000 );
+		paint.setPathEffect( new CornerPathEffect( 5 ) );
+
+		container.addView(tileView);
+	}
 }
 
